@@ -16,9 +16,19 @@ async function bootstrapServerless(): Promise<void> {
 }
 
 export default async function handler(req: Request, res: Response) {
-  if (!bootstrapPromise) {
-    bootstrapPromise = bootstrapServerless();
+  try {
+    if (!bootstrapPromise) {
+      bootstrapPromise = bootstrapServerless();
+    }
+    await bootstrapPromise;
+    server(req, res);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Serverless execution error:', err);
+    res.status(500).json({
+      statusCode: 500,
+      message: 'Internal Server Error',
+      error: err?.message ?? 'Unknown error',
+    });
   }
-  await bootstrapPromise;
-  server(req, res);
 }
