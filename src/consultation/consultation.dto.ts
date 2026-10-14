@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -25,23 +26,44 @@ export enum ActivityLevel {
 }
 
 export class BaselineDto {
+  @ApiPropertyOptional({
+    description: 'Biệt danh hoặc tên thân mật hiển thị trên lộ trình',
+    example: 'Chị Mai',
+  })
   @IsOptional()
   @IsString()
-  nickname?: string; // Tên/biệt danh thân mật để xưng hô trên menu
+  nickname?: string;
 
+  @ApiProperty({
+    description: 'Độ tuổi (từ 15 đến 80)',
+    example: 28,
+  })
   @IsInt()
   @Min(15, { message: 'Độ tuổi tối thiểu là 15' })
   @Max(80, { message: 'Độ tuổi tối đa là 80' })
-  age: number | undefined; // Tuổi phục vụ tính toán chuyển hóa
+  age: number | undefined;
 
+  @ApiProperty({
+    description: 'Cân nặng tính bằng kg',
+    example: 52,
+  })
   @IsNumber()
   @IsPositive()
-  weightKg: number | undefined; // Cân nặng (kg)
+  weightKg: number | undefined;
 
+  @ApiProperty({
+    description: 'Chiều cao tính bằng cm',
+    example: 160,
+  })
   @IsNumber()
   @IsPositive()
-  heightCm: number | undefined; // Chiều cao (cm)
+  heightCm: number | undefined;
 
+  @ApiProperty({
+    description: 'Mức độ vận động thể chất hàng ngày',
+    enum: ActivityLevel,
+    example: ActivityLevel.LIGHT,
+  })
   @IsEnum(ActivityLevel)
   activityLevel: ActivityLevel | undefined;
 }
@@ -65,54 +87,109 @@ export enum ExperienceLevel {
 }
 
 export class PreferencesDto {
+  @ApiPropertyOptional({
+    description: 'Kinh nghiệm đã từng uống sinh tố/nước ép xanh đậm đặc',
+    enum: ExperienceLevel,
+    example: ExperienceLevel.BEGINNER,
+  })
+  @IsOptional()
   @IsEnum(ExperienceLevel)
   experienceLevel?: ExperienceLevel;
 
+  @ApiPropertyOptional({
+    description:
+      'Khả năng uống được vị hăng/nồng từ rau diệp lục (cần tây, cải kale)',
+    example: false,
+  })
+  @IsOptional()
   @IsBoolean()
-  canDrinkBitterOrEarthy?: boolean; // Có uống được vị hăng/nồng (cần tây, cải kale) không
+  canDrinkBitterOrEarthy?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Số ngày lộ trình mong muốn (1, 3 hoặc 6 ngày)',
+    enum: [1, 3, 6],
+    example: 3,
+  })
+  @IsOptional()
   @IsEnum([1, 3, 6], { message: 'Gói lộ trình phải là 1, 3 hoặc 6 ngày' })
-  durationDays?: 1 | 3 | 6; // Lựa chọn gói 1 ngày, 3 ngày hoặc 6 ngày
+  durationDays?: 1 | 3 | 6;
 }
 
 // -------------------------------------------------------------
 // Giai đoạn 4: Thẩm định an toàn & Loại trừ rủi ro
 // -------------------------------------------------------------
 export class HealthRisksDto {
+  @ApiPropertyOptional({
+    description: 'Có triệu chứng đau dạ dày, viêm loét hoặc trào ngược không',
+    example: false,
+  })
+  @IsOptional()
   @IsBoolean()
-  hasStomachPain?: boolean; // Có đau dạ dày, viêm loét hoặc trào ngược không
+  hasStomachPain?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Đang mang thai hoặc trong giai đoạn cho con bú',
+    example: false,
+  })
+  @IsOptional()
   @IsBoolean()
-  isPregnantOrNursing?: boolean; // Đang mang thai hoặc cho con bú
+  isPregnantOrNursing?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Tiền sử bệnh tiểu đường hoặc đường huyết không ổn định',
+    example: false,
+  })
+  @IsOptional()
   @IsBoolean()
-  hasDiabetes?: boolean; // Có tiền sử tiểu đường / đường huyết không ổn định
+  hasDiabetes?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Danh sách các nguyên liệu gây dị ứng cần loại bỏ',
+    example: ['Cần tây', 'Dứa'],
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  allergies?: string[]; // Danh sách dị ứng thực phẩm (dứa, cần tây, đậu phộng...)
+  allergies?: string[];
 }
 
 // -------------------------------------------------------------
 // DTO Tổng hợp (Payload client gửi lên server)
 // -------------------------------------------------------------
 export class SubmitConsultationDto {
+  @ApiProperty({
+    description: 'Thông tin thể trạng cơ sở',
+    type: BaselineDto,
+  })
   @ValidateNested()
   @Type(() => BaselineDto)
   @IsNotEmpty()
   baseline?: BaselineDto;
 
+  @ApiProperty({
+    description: 'Mục tiêu sức khỏe ưu tiên',
+    enum: HealthGoal,
+    example: HealthGoal.DETOX,
+  })
   @IsEnum(HealthGoal)
   goal?: HealthGoal;
 
+  @ApiPropertyOptional({
+    description: 'Kinh nghiệm và nguyện vọng khẩu vị',
+    type: PreferencesDto,
+  })
+  @IsOptional()
   @ValidateNested()
   @Type(() => PreferencesDto)
-  @IsNotEmpty()
   preferences?: PreferencesDto;
 
+  @ApiPropertyOptional({
+    description: 'Các yếu tố rủi ro và an toàn sức khỏe',
+    type: HealthRisksDto,
+  })
+  @IsOptional()
   @ValidateNested()
   @Type(() => HealthRisksDto)
-  @IsNotEmpty()
   risks?: HealthRisksDto;
 }

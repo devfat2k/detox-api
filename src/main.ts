@@ -39,10 +39,12 @@ async function bootstrap() {
       'Hệ thống API quản lý thực đơn và tư vấn lộ trình nước ép thanh lọc cá nhân hóa',
     )
     .setVersion('1.0')
+    .addTag('Consultation', 'Khảo sát thể trạng và sinh lộ trình detox 3:1:1')
+    .addTag('Plans', 'Quản lý các gói lộ trình tiêu chuẩn (1, 3, 6 ngày)')
     .addTag('Drinks', 'Quản lý danh sách và chi tiết thức uống')
     .addTag('Categories', 'Quản lý nhóm danh mục sản phẩm')
-    .addTag('Consultation', 'Khảo sát thể trạng và sinh lộ trình detox 3:1:1')
     .addTag('Media', 'Upload hình ảnh lên Cloudinary')
+    .addTag('Health', 'Kiểm tra trạng thái liveness & kết nối database')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
