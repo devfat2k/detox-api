@@ -11,6 +11,7 @@ import { MediaModule } from './media/media.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     ConsultationModule,
     MediaModule,
     CategoriesModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [
