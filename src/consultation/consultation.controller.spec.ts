@@ -2,7 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConsultationController } from './consultation.controller';
 import {
-  ConsultationResult,
+  type ConsultationResult,
   ConsultationService,
 } from './consultation.service';
 import { HealthGoal, SubmitConsultationDto } from './consultation.dto';

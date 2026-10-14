@@ -6,6 +6,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { DrinksModule } from './drinks/drinks.module';
 import { ConsultationModule } from './consultation/consultation.module';
 import { MediaModule } from './media/media.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MediaModule } from './media/media.module';
     DrinksModule,
     ConsultationModule,
     MediaModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

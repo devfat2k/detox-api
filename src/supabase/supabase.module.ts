@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 
 @Global()
 @Module({
+  imports: [],
   providers: [SupabaseService],
   exports: [SupabaseService],
 })

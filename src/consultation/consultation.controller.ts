@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { SubmitConsultationDto } from './consultation.dto';
 import {
-  ConsultationResult,
+  type ConsultationResult,
   ConsultationService,
 } from './consultation.service';
 
