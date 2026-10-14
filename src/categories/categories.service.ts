@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from 'src/supabase/supabase.service';
+import { SupabaseService } from '../supabase/supabase.service';
 import { CreateCategoryDto } from './create-category.dto';
 import { UpdateCategoryDto } from './update-category.dto';
 

@@ -11,9 +11,9 @@ export class ConsultationController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  generateConsultation(
+  async generateConsultation(
     @Body() dto: SubmitConsultationDto,
-  ): ConsultationResult {
-    return this.consultationService.generateConsultation(dto);
+  ): Promise<ConsultationResult> {
+    return await this.consultationService.generateConsultation(dto);
   }
 }

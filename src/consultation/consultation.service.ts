@@ -5,6 +5,36 @@ import {
   HealthRisksDto,
   SubmitConsultationDto,
 } from './consultation.dto';
+import { DrinksService } from '../drinks/drinks.service';
+import {
+  BITTER_LEVEL_THRESHOLD,
+  BMI_THRESHOLDS,
+  CATEGORY_NAMES,
+  DAILY_MEAL_SLOTS,
+  DEFAULT_BASELINE,
+  DISCLAIMER_TEXT,
+  MENU_STRINGS,
+  MealSlotCategory,
+} from './consultation.constants';
+
+// -- Interfaces --
+
+export interface Drink {
+  id: string;
+  name: string;
+  slug: string;
+  category_id: string;
+  price: number;
+  ingredients: string[];
+  benefit: string;
+  color?: string;
+  level?: number;
+  is_detox_core?: boolean;
+  target_goals?: string[];
+  image_url?: string;
+  // Supabase join: .select('*, categories(id, name)')
+  categories?: { id: string; name: string } | null;
+}
 
 export interface BmiAssessment {
   bmi: number;
@@ -39,18 +69,28 @@ export interface ConsultationResult {
 
 @Injectable()
 export class ConsultationService {
-  generateConsultation(dto: SubmitConsultationDto): ConsultationResult {
-    const { baseline, goal, preferences, risks } = dto;
+  constructor(private readonly drinksService: DrinksService) {}
 
-    const nickname = baseline?.nickname?.trim() || 'Bạn';
-    const weight = baseline?.weightKg ?? 50;
-    const height = baseline?.heightCm ?? 160;
+  async generateConsultation(
+    dto: SubmitConsultationDto,
+  ): Promise<ConsultationResult> {
+    const { baseline, goal, preferences, risks } = dto;
+    const allDrinks = (await this.drinksService.findAll()) as Drink[];
+
+    const nickname =
+      baseline?.nickname?.trim() || DEFAULT_BASELINE.DEFAULT_NAME;
+    const weight = baseline?.weightKg ?? DEFAULT_BASELINE.WEIGHT_KG;
+    const height = baseline?.heightCm ?? DEFAULT_BASELINE.HEIGHT_CM;
     const assessment = this.calculateBmi(weight, height);
+
+    // TODO: baseline.age — chưa dùng, dự kiến tính TDEE ở phase sau
+    // TODO: preferences.experienceLevel — chưa dùng, dự kiến điều chỉnh độ đậm công thức
 
     const warnings = this.evaluateRisks(risks);
     const guidance = this.buildGuidance(goal, baseline?.activityLevel);
-    const durationDays = preferences?.durationDays ?? 1;
-    const dailySchedule = this.generateMenu(durationDays, dto);
+    const durationDays =
+      preferences?.durationDays ?? DEFAULT_BASELINE.DURATION_DAYS;
+    const dailySchedule = this.generateMenu(durationDays, allDrinks, dto);
 
     return {
       nickname,
@@ -59,8 +99,7 @@ export class ConsultationService {
       guidance,
       durationDays,
       dailySchedule,
-      disclaimer:
-        'Hệ thống cung cấp gợi ý hỗ trợ lối sống và dinh dưỡng, không chẩn đoán bệnh và không thay thế phác đồ điều trị y khoa.',
+      disclaimer: DISCLAIMER_TEXT,
     };
   }
 
@@ -72,15 +111,18 @@ export class ConsultationService {
     let recommendationNote =
       'Duy trì chế độ dinh dưỡng cân bằng và kết hợp detox nhẹ nhàng.';
 
-    if (bmi < 18.5) {
+    if (bmi < BMI_THRESHOLDS.UNDERWEIGHT) {
       category = 'Thiếu cân';
       recommendationNote =
         'Nên ưu tiên sinh tố giàu dinh dưỡng, sữa hạt và không nhịn ăn hoàn toàn.';
-    } else if (bmi >= 23 && bmi < 25) {
+    } else if (
+      bmi > BMI_THRESHOLDS.NORMAL_MAX &&
+      bmi <= BMI_THRESHOLDS.OVERWEIGHT_MAX
+    ) {
       category = 'Tiền béo phì (Thừa cân nhẹ)';
       recommendationNote =
         'Phù hợp với lộ trình cắt giảm calo rỗng và tăng cường chất xơ từ rau lá xanh.';
-    } else if (bmi >= 25) {
+    } else if (bmi > BMI_THRESHOLDS.OVERWEIGHT_MAX) {
       category = 'Thừa cân / Béo phì';
       recommendationNote =
         'Nên kết hợp liệu trình thanh lọc với vận động vừa sức, ưu tiên rau lá đậm diệp lục.';
@@ -120,10 +162,7 @@ export class ConsultationService {
     return warnings;
   }
 
-  private buildGuidance(
-    goal?: HealthGoal,
-    activity?: ActivityLevel,
-  ): string[] {
+  private buildGuidance(goal?: HealthGoal, activity?: ActivityLevel): string[] {
     const guidance: string[] = [];
 
     switch (goal) {
@@ -159,107 +198,82 @@ export class ConsultationService {
     return guidance;
   }
 
-  private generateMenu(days: number, dto: SubmitConsultationDto): DayPlan[] {
+  private generateMenu(
+    days: number,
+    allDrinks: Drink[],
+    dto: SubmitConsultationDto,
+  ): DayPlan[] {
+    const allergies = dto.risks?.allergies ?? [];
     const bitterOk = dto.preferences?.canDrinkBitterOrEarthy ?? false;
 
-    const baseSchedule: Omit<MealSlot, 'suggestedItems'>[] = [
-      {
-        slot: 1,
-        time: '07:00 - Bữa sáng',
-        name: 'Sinh tố xanh khởi động',
-        category: 'SMOOTHIE',
-        role: 'Đánh thức hệ tiêu hóa, cung cấp chất xơ hòa tan và tạo cảm giác no êm dịu',
-      },
-      {
-        slot: 2,
-        time: '10:00 - Phụ sáng',
-        name: 'Nước ép tươi bù khoáng',
-        category: 'JUICE',
-        role: 'Bổ sung nhanh vi chất, enzyme chuyển hóa và bù nước',
-      },
-      {
-        slot: 3,
-        time: '13:00 - Bữa trưa',
-        name: 'Sinh tố xanh phục hồi',
-        category: 'SMOOTHIE',
-        role: 'Duy trì năng lượng bền bỉ, ổn định đường huyết giữa ngày',
-      },
-      {
-        slot: 4,
-        time: '16:00 - Xế chiều',
-        name: 'Sinh tố xanh tăng cường',
-        category: 'SMOOTHIE',
-        role: 'Tiếp thêm năng lượng, xua tan cảm giác mệt mỏi cuối ngày làm việc',
-      },
-      {
-        slot: 5,
-        time: '19:00 - Bữa tối',
-        name: 'Sữa hạt dinh dưỡng / Trà thảo mộc',
-        category: 'NUT_MILK_TEA',
-        role: 'Cung cấp chất béo tốt lành tính, xoa dịu đường ruột và hỗ trợ ngủ sâu',
-      },
-    ];
+    // 1. Lọc bỏ các món chứa chất gây dị ứng
+    const allergyFreeDrinks = allDrinks.filter((drink) => {
+      if (!drink.ingredients || drink.ingredients.length === 0) return true;
+      const hasAllergy = drink.ingredients.some((ing) =>
+        allergies.some((allergy) =>
+          ing.toLowerCase().includes(allergy.toLowerCase()),
+        ),
+      );
+      return !hasAllergy;
+    });
 
-    const menuItemsByDay: Record<
-      number,
-      Record<number, string[]>
-    > = {
-      1: {
-        1: [bitterOk ? 'Sinh tố Kale Chuối Hạt Chia' : 'Sinh tố Bó Xôi Xoài Chuối'],
-        2: ['Nước ép Cần Tây Táo Xanh Dưa Leo'],
-        3: ['Sinh tố Bơ Chuối Cải Bó Xôi'],
-        4: ['Sinh tố Táo Xanh Cải Kale Hạt Lanh'],
-        5: ['Sữa Hạt Điều Hạnh Nhân Nguyên Chất'],
-      },
-      2: {
-        1: ['Sinh tố Cải Bó Xôi Dứa Chuối'],
-        2: ['Nước ép Cà Rốt Táo Cam'],
-        3: ['Sinh tố Kale Bơ Hạt Chia'],
-        4: ['Sinh tố Việt Quất Chuối Rau Bina'],
-        5: ['Sữa Yến Mạch Hạt Sen'],
-      },
-      3: {
-        1: ['Sinh tố Xanh Nhiệt Đới (Cải xoăn, Xoài, Chuối)'],
-        2: ['Nước ép Bưởi Táo Cần Tây'],
-        3: ['Sinh tố Bơ Hạnh Nhân Bó Xôi'],
-        4: ['Sinh tố Táo Gừng Cải Kale'],
-        5: ['Trà Thảo Mộc Hoa Cúc Táo Đỏ'],
-      },
-      4: {
-        1: ['Sinh tố Bó Xôi Dâu Tây Hạt Chia'],
-        2: ['Nước ép Cần Tây Dưa Chuột Chanh'],
-        3: ['Sinh tố Kale Chuối Bơ Đậu Phộng Nhẹ'],
-        4: ['Sinh tố Xoài Rau Bina Bạc Hà'],
-        5: ['Sữa Hạt Điều Yến Mạch'],
-      },
-      5: {
-        1: ['Sinh tố Xanh Năng Lượng (Kale, Chuối, Hạt Lanh)'],
-        2: ['Nước ép Cà Rốt Củ Dền Táo'],
-        3: ['Sinh tố Bơ Cải Bó Xôi Sữa Hạnh Nhân'],
-        4: ['Sinh tố Kiwi Chuối Rau Bina'],
-        5: ['Sữa Hạnh Nhân Hạt Chia'],
-      },
-      6: {
-        1: ['Sinh tố Detox Toàn Diện (Kale, Táo Xanh, Chuối)'],
-        2: ['Nước ép Thơm Cần Tây Gừng'],
-        3: ['Sinh tố Bơ Bó Xôi Hạt Sen'],
-        4: ['Sinh tố Dâu Tằm Chuối Rau Xanh'],
-        5: ['Trà Thảo Mộc Kỷ Tử Hoa Cúc'],
-      },
-    };
+    // 2. Lọc theo khẩu vị — nếu không uống được vị hăng/đắng, loại drink level cao
+    const safeDrinks = bitterOk
+      ? allergyFreeDrinks
+      : allergyFreeDrinks.filter(
+          (d) => (d.level ?? 0) < BITTER_LEVEL_THRESHOLD,
+        );
 
+    // 3. Phân loại món theo nhóm cữ uống (dùng categories.name từ Supabase join)
+    const categoryName = (d: Drink) => d.categories?.name ?? '';
+
+    const smoothies = safeDrinks.filter(
+      (d) =>
+        d.is_detox_core === true ||
+        categoryName(d).includes(CATEGORY_NAMES.SMOOTHIE),
+    );
+    const juices = safeDrinks.filter(
+      (d) =>
+        !d.is_detox_core &&
+        categoryName(d).includes(CATEGORY_NAMES.JUICE),
+    );
+    const nutMilks = safeDrinks.filter(
+      (d) =>
+        categoryName(d).includes(CATEGORY_NAMES.NUT_MILK) ||
+        categoryName(d).includes(CATEGORY_NAMES.TEA),
+    );
+
+    // 4. Khởi tạo lịch trình theo số ngày (xoay vòng món)
     const schedule: DayPlan[] = [];
-    for (let day = 1; day <= days; day++) {
-      const dayCycle = ((day - 1) % 6) + 1;
-      const dayItems = menuItemsByDay[dayCycle] || menuItemsByDay[1];
 
+    for (let day = 1; day <= days; day++) {
       schedule.push({
         day,
-        title: `Ngày ${day}: Nhịp điệu thanh lọc cân bằng`,
-        meals: baseSchedule.map((item) => ({
-          ...item,
-          suggestedItems: dayItems[item.slot] || ['Thức uống thanh lọc tiêu chuẩn'],
-        })),
+        title: MENU_STRINGS.DAY_TITLE(day),
+        meals: DAILY_MEAL_SLOTS.map((slot) => {
+          let candidatePool: Drink[] = [];
+          if (slot.category === MealSlotCategory.SMOOTHIE)
+            candidatePool = smoothies;
+          else if (slot.category === MealSlotCategory.JUICE)
+            candidatePool = juices;
+          else candidatePool = nutMilks;
+
+          // Nếu database chưa có đủ món theo nhóm, dùng fallback an toàn từ toàn bộ safeDrinks
+          if (candidatePool.length === 0) candidatePool = safeDrinks;
+
+          // Chọn món xoay vòng theo ngày và cữ
+          const selectedDrink =
+            candidatePool.length > 0
+              ? candidatePool[(day + slot.slot) % candidatePool.length]
+              : null;
+
+          return {
+            ...slot,
+            suggestedItems: selectedDrink
+              ? [selectedDrink.name]
+              : [MENU_STRINGS.FALLBACK_DRINK],
+          };
+        }),
       });
     }
 

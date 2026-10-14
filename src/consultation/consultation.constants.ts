@@ -58,3 +58,25 @@ export const DEFAULT_BASELINE = {
   DURATION_DAYS: 1,
   DEFAULT_NAME: 'Bạn',
 } as const;
+
+// 5. Tên category trong database — dùng để phân loại drink theo nhóm cữ uống
+export const CATEGORY_NAMES = {
+  SMOOTHIE: 'Sinh tố',
+  JUICE: 'Nước ép',
+  NUT_MILK: 'Sữa',
+  TEA: 'Trà',
+} as const;
+
+// 6. Chuỗi mặc định cho menu output
+export const MENU_STRINGS = {
+  DAY_TITLE: (day: number) => `Ngày ${day}: Nhịp điệu thanh lọc cân bằng`,
+  FALLBACK_DRINK: 'Thức uống thanh lọc tiêu chuẩn',
+} as const;
+
+// 7. Disclaimer pháp lý
+export const DISCLAIMER_TEXT =
+  'Hệ thống cung cấp gợi ý hỗ trợ lối sống và dinh dưỡng, không chẩn đoán bệnh và không thay thế phác đồ điều trị y khoa.';
+
+// 8. Ngưỡng level xác định vị đắng/hăng — drink có level >= ngưỡng này được coi là vị đậm
+// ponytail: nếu sau này DB có cột `is_bitter` riêng thì dùng cột đó thay thế
+export const BITTER_LEVEL_THRESHOLD = 70;

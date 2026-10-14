@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,9 +12,9 @@ async function bootstrap() {
   // 2. Tự động kiểm tra và lọc dữ liệu request (bảo mật dữ liệu)
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,            // Loại bỏ các trường không định nghĩa trong DTO
+      whitelist: true, // Loại bỏ các trường không định nghĩa trong DTO
       forbidNonWhitelisted: true, // Báo lỗi nếu client gửi trường thừa
-      transform: true,            // Tự động ép kiểu (vd: string "18" sang number 18)
+      transform: true, // Tự động ép kiểu (vd: string "18" sang number 18)
     }),
   );
 
@@ -24,9 +25,23 @@ async function bootstrap() {
     credentials: true,
   });
 
+  const config = new DocumentBuilder()
+    .setTitle('Detox API - Ép Xanh Chữa Lành')
+    .setDescription(
+      'Hệ thống API quản lý thực đơn và tư vấn lộ trình nước ép thanh lọc cá nhân hóa',
+    )
+    .setVersion('1.0')
+    .addTag('Drinks', 'Quản lý danh sách và chi tiết thức uống')
+    .addTag('Categories', 'Quản lý nhóm danh mục sản phẩm')
+    .addTag('Consultation', 'Khảo sát thể trạng và sinh lộ trình detox 3:1:1')
+    .addTag('Media', 'Upload hình ảnh lên Cloudinary')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
   // 4. Chạy ở port 3001
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
   console.log(`Detox API is running on: http://localhost:${port}/api`);
+  console.log(`Swagger Docs available at: http://localhost:${port}/api/docs`);
 }
 void bootstrap();

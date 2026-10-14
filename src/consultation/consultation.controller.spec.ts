@@ -30,7 +30,9 @@ describe('ConsultationController', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    mockConsultationService.generateConsultation.mockReturnValue(mockConsultationResult);
+    mockConsultationService.generateConsultation.mockResolvedValue(
+      mockConsultationResult,
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ConsultationController],
@@ -50,14 +52,16 @@ describe('ConsultationController', () => {
   });
 
   describe('generateConsultation', () => {
-    it('nên gọi service và trả về kết quả tư vấn', () => {
+    it('nên gọi service và trả về kết quả tư vấn', async () => {
       const dto: SubmitConsultationDto = {
         goal: HealthGoal.DETOX,
       };
 
-      const result = controller.generateConsultation(dto);
+      const result = await controller.generateConsultation(dto);
       expect(result).toEqual(mockConsultationResult);
-      expect(mockConsultationService.generateConsultation).toHaveBeenCalledWith(dto);
+      expect(mockConsultationService.generateConsultation).toHaveBeenCalledWith(
+        dto,
+      );
     });
   });
 });

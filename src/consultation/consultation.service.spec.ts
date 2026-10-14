@@ -6,13 +6,58 @@ import {
   SubmitConsultationDto,
 } from './consultation.dto';
 import { ConsultationService } from './consultation.service';
+import { DrinksService } from '../drinks/drinks.service';
 
 describe('ConsultationService', () => {
   let service: ConsultationService;
 
+  // Dữ liệu thức uống giả lập từ database (Supabase join trả về "categories" không phải "category")
+  const mockDrinks = [
+    {
+      id: '1',
+      name: 'Sinh tố Cải Kale Chuối',
+      is_detox_core: true,
+      categories: { id: 'c1', name: 'Sinh tố xanh' },
+      ingredients: ['Cải kale', 'Chuối', 'Hạt chia'],
+      target_goals: ['DETOX', 'WEIGHT_LOSS'],
+      level: 80,
+    },
+    {
+      id: '2',
+      name: 'Nước ép Cần Tây Táo Xanh',
+      is_detox_core: false,
+      categories: { id: 'c2', name: 'Nước ép tươi' },
+      ingredients: ['Cần tây', 'Táo xanh', 'Dưa leo'],
+      target_goals: ['DETOX'],
+      level: 50,
+    },
+    {
+      id: '3',
+      name: 'Sữa Hạt Điều Hạnh Nhân',
+      is_detox_core: false,
+      categories: { id: 'c3', name: 'Sữa hạt dinh dưỡng' },
+      ingredients: ['Hạt điều', 'Hạnh nhân'],
+      target_goals: ['BEAUTY_SKIN'],
+      level: 20,
+    },
+  ];
+
+  const mockDrinksService = {
+    findAll: jest.fn().mockResolvedValue(mockDrinks),
+  };
+
   beforeEach(async () => {
+    jest.clearAllMocks();
+    mockDrinksService.findAll.mockResolvedValue(mockDrinks);
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ConsultationService],
+      providers: [
+        ConsultationService,
+        {
+          provide: DrinksService,
+          useValue: mockDrinksService,
+        },
+      ],
     }).compile();
 
     service = module.get<ConsultationService>(ConsultationService);
@@ -23,7 +68,7 @@ describe('ConsultationService', () => {
   });
 
   describe('generateConsultation', () => {
-    it('nên tính toán BMI và trả về lộ trình 1 ngày với 5 cữ uống chuẩn 3:1:1', () => {
+    it('nên tính toán BMI và trả về lộ trình 1 ngày với 5 cữ uống chuẩn 3:1:1', async () => {
       const dto: SubmitConsultationDto = {
         baseline: {
           nickname: 'Lan',
@@ -46,7 +91,7 @@ describe('ConsultationService', () => {
         },
       };
 
-      const result = service.generateConsultation(dto);
+      const result = await service.generateConsultation(dto);
 
       expect(result.nickname).toBe('Lan');
       expect(result.assessment.bmi).toBe(19.5);
@@ -59,9 +104,10 @@ describe('ConsultationService', () => {
       expect(result.dailySchedule[0].meals[2].category).toBe('SMOOTHIE');
       expect(result.dailySchedule[0].meals[3].category).toBe('SMOOTHIE');
       expect(result.dailySchedule[0].meals[4].category).toBe('NUT_MILK_TEA');
+      expect(mockDrinksService.findAll).toHaveBeenCalledTimes(1);
     });
 
-    it('nên cảnh báo chính xác khi có các rủi ro sức khỏe', () => {
+    it('nên cảnh báo chính xác khi có các rủi ro sức khỏe', async () => {
       const dto: SubmitConsultationDto = {
         baseline: {
           nickname: '',
@@ -84,7 +130,7 @@ describe('ConsultationService', () => {
         },
       };
 
-      const result = service.generateConsultation(dto);
+      const result = await service.generateConsultation(dto);
 
       expect(result.nickname).toBe('Bạn');
       expect(result.assessment.bmi).toBe(29.3);
@@ -97,7 +143,7 @@ describe('ConsultationService', () => {
       expect(result.dailySchedule).toHaveLength(3);
     });
 
-    it('nên tạo đủ 6 ngày cho gói 6 ngày', () => {
+    it('nên tạo đủ 6 ngày cho gói 6 ngày', async () => {
       const dto: SubmitConsultationDto = {
         baseline: {
           age: 25,
@@ -112,7 +158,7 @@ describe('ConsultationService', () => {
         risks: {},
       };
 
-      const result = service.generateConsultation(dto);
+      const result = await service.generateConsultation(dto);
 
       expect(result.assessment.category).toBe('Thiếu cân');
       expect(result.durationDays).toBe(6);
@@ -120,6 +166,26 @@ describe('ConsultationService', () => {
       result.dailySchedule.forEach((day, index) => {
         expect(day.day).toBe(index + 1);
         expect(day.meals).toHaveLength(5);
+      });
+    });
+
+    it('nên loại trừ các món chứa thành phần gây dị ứng', async () => {
+      const dto: SubmitConsultationDto = {
+        goal: HealthGoal.DETOX,
+        risks: {
+          allergies: ['Cần tây'],
+        },
+      };
+
+      const result = await service.generateConsultation(dto);
+
+      // Kiểm tra tất cả gợi ý trong ngày không món nào chứa 'Cần Tây'
+      result.dailySchedule.forEach((day) => {
+        day.meals.forEach((meal) => {
+          meal.suggestedItems.forEach((item) => {
+            expect(item).not.toContain('Cần Tây');
+          });
+        });
       });
     });
   });
