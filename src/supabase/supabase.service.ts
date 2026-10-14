@@ -8,7 +8,10 @@ export class SupabaseService {
 
   constructor(private configService: ConfigService) {
     const url = this.configService.get<string>('SUPABASE_URL') ?? '';
-    const key = this.configService.get<string>('SUPABASE_KEY') ?? '';
+    const key =
+      this.configService.get<string>('SUPABASE_SECRET_KEY') ??
+      this.configService.get<string>('SUPABASE_KEY') ??
+      '';
     this.client = createClient(url, key);
   }
 
