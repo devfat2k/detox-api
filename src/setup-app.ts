@@ -1,6 +1,11 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
+import * as helmetPkg from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+// ponytail: helmet CJS/ESM interop — NodeNext resolves to CJS types where default export
+// is the namespace itself; pick the callable from either shape.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const helmet = ((helmetPkg as any).default ?? helmetPkg) as (options?: any) => any;
 
 export function configureApp(app: INestApplication): void {
   // 1. Kích hoạt shutdown hooks để đóng kết nối an toàn khi tắt app
