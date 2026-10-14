@@ -7,6 +7,7 @@ import {
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateDrinkDto } from './create-drink.dto';
 import { FilterDrinkDto } from './filter-drink.dto';
+import { UpdateDrinkDto } from './update-drink.dto';
 
 @Injectable()
 export class DrinksService {
@@ -82,5 +83,34 @@ export class DrinksService {
     }
 
     return data;
+  }
+
+  async update(id: string, updateDrinkDto: UpdateDrinkDto) {
+    const { data, error } = await this.supabaseService
+      .getClient()
+      .from('drinks')
+      .update(updateDrinkDto)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return data;
+  }
+
+  async remove(id: string) {
+    const { error } = await this.supabaseService
+      .getClient()
+      .from('drinks')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+    return { message: `Thức uống với ID ${id} đã được xóa thành công.` };
   }
 }

@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CreateDrinkDto } from './create-drink.dto';
 import { DrinksService } from './drinks.service';
 import { FilterDrinkDto } from './filter-drink.dto';
+import { UpdateDrinkDto } from './update-drink.dto';
 
 @Controller('drinks')
 export class DrinksController {
@@ -20,5 +30,18 @@ export class DrinksController {
   @Post()
   async create(@Body() createDrinkDto: CreateDrinkDto) {
     return await this.drinksService.create(createDrinkDto);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateDrinkDto: UpdateDrinkDto,
+  ) {
+    return await this.drinksService.update(id, updateDrinkDto);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return await this.drinksService.remove(id);
   }
 }
