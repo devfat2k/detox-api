@@ -17,7 +17,7 @@ export class DrinksService {
     let query = this.supabaseService
       .getClient()
       .from('drinks')
-      .select('*, categories(id, name)');
+      .select('*, categories(id, name, slug)');
 
     if (filter?.category_id) {
       query = query.eq('category_id', filter.category_id);
@@ -44,7 +44,7 @@ export class DrinksService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('drinks')
-      .select('*, categories(id, name)')
+      .select('*, categories(id, name, slug)')
       .eq('slug', slug)
       .single();
 
@@ -59,7 +59,7 @@ export class DrinksService {
     const { data, error } = await this.supabaseService
       .getClient()
       .from('drinks')
-      .select('*, categories(id, name)')
+      .select('*, categories(id, name, slug)')
       .eq('id', id)
       .single();
 

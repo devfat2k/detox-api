@@ -12,6 +12,8 @@ import { CategoriesModule } from './categories/categories.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { PlansModule } from './plans/plans.module';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { PlansModule } from './plans/plans.module';
     MediaModule,
     CategoriesModule,
     PlansModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -44,6 +47,7 @@ import { PlansModule } from './plans/plans.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
   ],
 })
 export class AppModule {}
