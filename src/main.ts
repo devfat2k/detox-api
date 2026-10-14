@@ -1,65 +1,17 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { configureApp } from './setup-app';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableShutdownHooks();
-
-  // 1. Bảo vệ HTTP headers chống các lỗ hổng web phổ biến
-  app.use(
-    helmet({
-      contentSecurityPolicy: false, // Tắt CSP để tránh chặn script/style của Swagger UI
-    }),
-  );
-
-  // Tiền tố toàn cục cho toàn bộ API
-  app.setGlobalPrefix('api');
-
-  //Tự động kiểm tra và lọc dữ liệu request (bảo mật dữ liệu)
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Loại bỏ các trường không định nghĩa trong DTO
-      forbidNonWhitelisted: true, // Báo lỗi nếu client gửi trường thừa
-      transform: true, // Tự động ép kiểu (vd: string "18" sang number 18)
-    }),
-  );
-
-  // url cho phép truy cập API - CORS
-  const allowedOrigins = process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
-    : ['http://localhost:3000'];
-  app.enableCors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
-
-  const isSwaggerEnabled = process.env.SWAGGER_ENABLED !== 'false';
-  if (isSwaggerEnabled) {
-    const config = new DocumentBuilder()
-      .setTitle('Detox API - Ép Xanh Chữa Lành')
-      .setDescription(
-        'Hệ thống API quản lý thực đơn và tư vấn lộ trình nước ép thanh lọc cá nhân hóa',
-      )
-      .setVersion('1.0')
-      .addTag('Consultation', 'Khảo sát thể trạng và sinh lộ trình detox 3:1:1')
-      .addTag('Plans', 'Quản lý các gói lộ trình tiêu chuẩn (1, 3, 6 ngày)')
-      .addTag('Drinks', 'Quản lý danh sách và chi tiết thức uống')
-      .addTag('Categories', 'Quản lý nhóm danh mục sản phẩm')
-      .addTag('Media', 'Upload hình ảnh lên Cloudinary')
-      .addTag('Health', 'Kiểm tra trạng thái liveness & kết nối database')
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
-  }
+  configureApp(app);
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
 
+  const isSwaggerEnabled = process.env.SWAGGER_ENABLED !== 'false';
   const logger = new Logger('Bootstrap');
   logger.log(`Detox API is running on: http://localhost:${port}/api`);
   if (isSwaggerEnabled) {
