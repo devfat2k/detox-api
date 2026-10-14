@@ -30,6 +30,7 @@
     "@nestjs/terminus": "^12.1.0",
     "@nestjs/throttler": "^6.7.1",
     "@nestjs/typeorm": "^12.0.2",
+    "@supabase/server": "^1.9.2",
     "@supabase/supabase-js": "^2.117.3",
     "@types/mocha": "^10.0.10",
     "@types/streamifier": "^0.1.2",
