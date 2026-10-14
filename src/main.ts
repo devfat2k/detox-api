@@ -7,6 +7,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // TODO: [Production-Ready 1/4] Kích hoạt Graceful Shutdown để hoàn tất request dở dang khi restart/deploy
+  // Code mẫu: app.enableShutdownHooks();
+
   // 1. Bảo vệ HTTP headers chống các lỗ hổng web phổ biến
   app.use(
     helmet({
@@ -27,12 +30,21 @@ async function bootstrap() {
   );
 
   // 3. Cho phép Frontend gọi API
+  // TODO: [Production-Ready 2/4] Chuyển đổi CORS sang đọc động từ biến môi trường FRONTEND_URL
+  // Code mẫu:
+  // const allowedOrigins = process.env.FRONTEND_URL
+  //   ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
+  //   : ['http://localhost:3000'];
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000'], // Thay bằng allowedOrigins
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
+  // TODO: [Production-Ready 3/4] Bọc cấu hình Swagger trong điều kiện SWAGGER_ENABLED
+  // Code mẫu:
+  // const isSwaggerEnabled = process.env.SWAGGER_ENABLED !== 'false';
+  // if (isSwaggerEnabled) { ... }
   const config = new DocumentBuilder()
     .setTitle('Detox API - Ép Xanh Chữa Lành')
     .setDescription(
@@ -48,9 +60,16 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
   // 4. Chạy ở port 3001
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
+
+  // TODO: [Production-Ready 4/4] Thay thế console.log bằng NestJS Logger chuẩn hóa
+  // Code mẫu:
+  // const logger = new Logger('Bootstrap');
+  // logger.log(`Detox API is running on: http://localhost:${port}/api`);
+  // if (isSwaggerEnabled) logger.log(`Swagger Docs available at: http://localhost:${port}/api/docs`);
   console.log(`Detox API is running on: http://localhost:${port}/api`);
   console.log(`Swagger Docs available at: http://localhost:${port}/api/docs`);
 }
