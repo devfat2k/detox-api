@@ -305,5 +305,88 @@ describe('ConsultationService', () => {
         expect(result.durationDays).toBe(1);
       });
     });
+
+    describe('Tối ưu phân loại danh mục và ưu tiên mục tiêu', () => {
+      it('nên nhận diện đúng cữ uống qua category slug khi name không theo chuẩn', async () => {
+        const drinksWithSlugOnly = [
+          {
+            id: 's1',
+            name: 'Green Smoothie Special',
+            is_detox_core: false,
+            categories: { id: 'c1', name: 'Custom Name', slug: 'sinh-to-xanh' },
+            ingredients: ['Kale'],
+            target_goals: ['DETOX'],
+            level: 30,
+          },
+          {
+            id: 'j1',
+            name: 'Orange Juice Special',
+            is_detox_core: false,
+            categories: { id: 'c2', name: 'Custom Juice', slug: 'nuoc-ep-tuoi' },
+            ingredients: ['Orange'],
+            target_goals: ['BEAUTY_SKIN'],
+            level: 20,
+          },
+          {
+            id: 'm1',
+            name: 'Almond Milk Special',
+            is_detox_core: false,
+            categories: { id: 'c3', name: 'Custom Milk', slug: 'sua-hat-tra' },
+            ingredients: ['Almond'],
+            target_goals: ['DIGESTION'],
+            level: 10,
+          },
+        ];
+
+        mockDrinksService.findAll.mockResolvedValueOnce(drinksWithSlugOnly);
+
+        const dto: SubmitConsultationDto = {
+          goal: HealthGoal.DETOX,
+          preferences: { durationDays: 1 },
+        };
+
+        const result = await service.generateConsultation(dto);
+        const day1Meals = result.dailySchedule[0].meals;
+
+        expect(day1Meals[0].suggestedItems[0]).toBe('Green Smoothie Special');
+        expect(day1Meals[1].suggestedItems[0]).toBe('Orange Juice Special');
+        expect(day1Meals[4].suggestedItems[0]).toBe('Almond Milk Special');
+      });
+
+      it('nên ưu tiên gợi ý thức uống khớp với mục tiêu sức khỏe (target_goals)', async () => {
+        const multipleSmoothies = [
+          {
+            id: 's-detox',
+            name: 'Sinh tố Thuần Detox',
+            is_detox_core: true,
+            categories: { id: 'c1', name: 'Sinh tố xanh', slug: 'sinh-to-xanh' },
+            target_goals: ['DETOX'],
+            level: 20,
+          },
+          {
+            id: 's-weight',
+            name: 'Sinh tố Giảm Cân Đốt Mỡ',
+            is_detox_core: true,
+            categories: { id: 'c1', name: 'Sinh tố xanh', slug: 'sinh-to-xanh' },
+            target_goals: ['WEIGHT_LOSS'],
+            level: 20,
+          },
+        ];
+
+        mockDrinksService.findAll.mockResolvedValueOnce(multipleSmoothies);
+
+        const dto: SubmitConsultationDto = {
+          goal: HealthGoal.WEIGHT_LOSS,
+          preferences: { durationDays: 1 },
+        };
+
+        const result = await service.generateConsultation(dto);
+        // Slot 1 (Bữa sáng) với day=1, slot=1 -> (1+1)%2 = 0 -> phần tử đầu tiên
+        // Vì ưu tiên WEIGHT_LOSS nên món 'Sinh tố Giảm Cân Đốt Mỡ' phải đứng đầu mảng
+        expect(result.dailySchedule[0].meals[0].suggestedItems[0]).toBe(
+          'Sinh tố Giảm Cân Đốt Mỡ',
+        );
+      });
+    });
   });
 });

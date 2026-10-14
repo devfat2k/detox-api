@@ -11,6 +11,7 @@ import {
   BITTER_LEVEL_THRESHOLD,
   BMI_THRESHOLDS,
   CATEGORY_NAMES,
+  CATEGORY_SLUGS,
   DAILY_MEAL_SLOTS,
   DEFAULT_BASELINE,
   DISCLAIMER_TEXT,
@@ -42,8 +43,8 @@ export interface Drink {
   is_detox_core?: boolean;
   target_goals?: string[];
   image_url?: string;
-  // Supabase join: .select('*, categories(id, name)')
-  categories?: { id: string; name: string } | null;
+  // Supabase join: .select('*, categories(id, name, slug)')
+  categories?: { id: string; name: string; slug?: string } | null;
 }
 
 export interface BmiAssessment {
@@ -318,6 +319,7 @@ export class ConsultationService {
   ): DayPlan[] {
     const allergies = dto.risks?.allergies ?? [];
     const bitterOk = dto.preferences?.canDrinkBitterOrEarthy ?? false;
+    const userGoal = dto.goal;
 
     // 1. Lọc bỏ các món chứa chất gây dị ứng
     const allergyFreeDrinks = allDrinks.filter((drink) => {
@@ -337,24 +339,41 @@ export class ConsultationService {
           (d) => (d.level ?? 0) < BITTER_LEVEL_THRESHOLD,
         );
 
-    // 3. Phân loại món theo nhóm cữ uống (dùng categories.name từ Supabase join)
-    const categoryName = (d: Drink) => d.categories?.name ?? '';
+    // 3. Hàm kiểm tra danh mục theo cả Name lẫn Slug (linh hoạt & chống lỗi gõ chữ)
+    const isCategory = (d: Drink, nameKey: string, slugKey: string) => {
+      const catName = d.categories?.name?.toLowerCase() ?? '';
+      const catSlug = d.categories?.slug?.toLowerCase() ?? '';
+      return (
+        catName.includes(nameKey.toLowerCase()) ||
+        catSlug.includes(slugKey.toLowerCase())
+      );
+    };
 
-    const smoothies = safeDrinks.filter(
-      (d) =>
-        d.is_detox_core === true ||
-        categoryName(d).includes(CATEGORY_NAMES.SMOOTHIE),
-    );
-    const juices = safeDrinks.filter(
-      (d) => !d.is_detox_core && categoryName(d).includes(CATEGORY_NAMES.JUICE),
-    );
-    const nutMilks = safeDrinks.filter(
-      (d) =>
-        categoryName(d).includes(CATEGORY_NAMES.NUT_MILK) ||
-        categoryName(d).includes(CATEGORY_NAMES.TEA),
-    );
+    const isSmoothie = (d: Drink) =>
+      d.is_detox_core === true ||
+      isCategory(d, CATEGORY_NAMES.SMOOTHIE, CATEGORY_SLUGS.SMOOTHIE);
 
-    // 4. Khởi tạo lịch trình theo số ngày (xoay vòng món)
+    const isJuice = (d: Drink) =>
+      !d.is_detox_core &&
+      isCategory(d, CATEGORY_NAMES.JUICE, CATEGORY_SLUGS.JUICE);
+
+    const isNutMilkOrTea = (d: Drink) =>
+      isCategory(d, CATEGORY_NAMES.NUT_MILK, CATEGORY_SLUGS.NUT_MILK) ||
+      isCategory(d, CATEGORY_NAMES.TEA, CATEGORY_SLUGS.TEA);
+
+    // 4. Ưu tiên món khớp với mục tiêu sức khỏe của khách (Goal-driven sorting)
+    const sortByGoal = (drinks: Drink[]): Drink[] => {
+      if (!userGoal) return drinks;
+      const matching = drinks.filter((d) => d.target_goals?.includes(userGoal));
+      const others = drinks.filter((d) => !d.target_goals?.includes(userGoal));
+      return [...matching, ...others];
+    };
+
+    const smoothies = sortByGoal(safeDrinks.filter(isSmoothie));
+    const juices = sortByGoal(safeDrinks.filter(isJuice));
+    const nutMilks = sortByGoal(safeDrinks.filter(isNutMilkOrTea));
+
+    // 5. Khởi tạo lịch trình theo số ngày (xoay vòng món)
     const schedule: DayPlan[] = [];
 
     for (let day = 1; day <= days; day++) {

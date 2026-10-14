@@ -67,6 +67,14 @@ export const CATEGORY_NAMES = {
   TEA: 'Trà',
 } as const;
 
+// 5b. Slug category trong database — dùng để phân loại drink dự phòng khi name thay đổi
+export const CATEGORY_SLUGS = {
+  SMOOTHIE: 'sinh-to',
+  JUICE: 'nuoc-ep',
+  NUT_MILK: 'sua-hat',
+  TEA: 'tra',
+} as const;
+
 // 6. Chuỗi mặc định cho menu output
 export const MENU_STRINGS = {
   DAY_TITLE: (day: number) => `Ngày ${day}: Nhịp điệu thanh lọc cân bằng`,
