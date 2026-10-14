@@ -1,12 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Tiền tố toàn cục cho toàn bộ API
+  // 1. Bảo vệ HTTP headers chống các lỗ hổng web phổ biến
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Tắt CSP để tránh chặn script/style của Swagger UI
+    }),
+  );
+
+  // 2. Tiền tố toàn cục cho toàn bộ API
   app.setGlobalPrefix('api');
 
   // 2. Tự động kiểm tra và lọc dữ liệu request (bảo mật dữ liệu)
