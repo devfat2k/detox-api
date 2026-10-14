@@ -1,5 +1,5 @@
 import { ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
-import { AllExceptionsFilter } from './all-exceptions.filter';
+import { AllExceptionsFilter } from './all-exceptions.filter.js';
 import { Response, Request } from 'express';
 
 describe('AllExceptionsFilter', () => {

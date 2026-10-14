@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 import { Test, TestingModule } from '@nestjs/testing';
-import { DrinksController } from './drinks.controller';
-import { DrinksService } from './drinks.service';
+import { DrinksController } from './drinks.controller.js';
+import { DrinksService } from './drinks.service.js';
 
 describe('DrinksController', () => {
   let controller: DrinksController;

@@ -1,8 +1,8 @@
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { of, lastValueFrom } from 'rxjs';
-import { TransformInterceptor } from './transform.interceptor';
-import { ApiResponse } from '../interfaces/api-response.interface';
+import { TransformInterceptor } from './transform.interceptor.js';
+import { ApiResponse } from '../interfaces/api-response.interface.js';
 
 describe('TransformInterceptor', () => {
   let interceptor: TransformInterceptor<unknown>;

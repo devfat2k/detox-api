@@ -1,10 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SubmitConsultationDto } from './consultation.dto';
+import { SubmitConsultationDto } from './consultation.dto.js';
 import {
   type ConsultationResult,
   ConsultationService,
-} from './consultation.service';
+} from './consultation.service.js';
 
 @ApiTags('Consultation')
 @Controller('consultation')

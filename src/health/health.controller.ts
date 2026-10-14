@@ -5,8 +5,8 @@ import {
   MemoryHealthIndicator,
 } from '@nestjs/terminus';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SupabaseService } from '../supabase/supabase.service';
-import { BypassTransform } from '../common/decorators/bypass-transform.decorator';
+import { SupabaseService } from '../supabase/supabase.service.js';
+import { BypassTransform } from '../common/decorators/bypass-transform.decorator.js';
 
 @ApiTags('Health')
 @Controller('health')

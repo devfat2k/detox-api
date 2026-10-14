@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoriesController } from './categories.controller';
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './create-category.dto';
+import { CategoriesController } from './categories.controller.js';
+import { CategoriesService } from './categories.service.js';
+import { CreateCategoryDto } from './create-category.dto.js';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;

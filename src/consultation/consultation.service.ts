@@ -5,8 +5,8 @@ import {
   HealthGoal,
   HealthRisksDto,
   SubmitConsultationDto,
-} from './consultation.dto';
-import { DrinksService } from '../drinks/drinks.service';
+} from './consultation.dto.js';
+import { DrinksService } from '../drinks/drinks.service.js';
 import {
   BITTER_LEVEL_THRESHOLD,
   BMI_THRESHOLDS,
@@ -17,8 +17,8 @@ import {
   DISCLAIMER_TEXT,
   MENU_STRINGS,
   MealSlotCategory,
-} from './consultation.constants';
-import { PlansService } from '../plans/plans.service';
+} from './consultation.constants.js';
+import { PlansService } from '../plans/plans.service.js';
 
 // -- Interfaces --
 export interface RecommendedPlan {

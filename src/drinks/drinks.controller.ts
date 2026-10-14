@@ -9,10 +9,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateDrinkDto } from './create-drink.dto';
-import { DrinksService } from './drinks.service';
-import { FilterDrinkDto } from './filter-drink.dto';
-import { UpdateDrinkDto } from './update-drink.dto';
+import { CreateDrinkDto } from './create-drink.dto.js';
+import { DrinksService } from './drinks.service.js';
+import { FilterDrinkDto } from './filter-drink.dto.js';
+import { UpdateDrinkDto } from './update-drink.dto.js';
 
 @ApiTags('Drinks')
 @Controller('drinks')

@@ -4,10 +4,10 @@ import {
   ExperienceLevel,
   HealthGoal,
   SubmitConsultationDto,
-} from './consultation.dto';
-import { ConsultationService } from './consultation.service';
-import { DrinksService } from '../drinks/drinks.service';
-import { PlansService } from '../plans/plans.service';
+} from './consultation.dto.js';
+import { ConsultationService } from './consultation.service.js';
+import { DrinksService } from '../drinks/drinks.service.js';
+import { PlansService } from '../plans/plans.service.js';
 
 describe('ConsultationService', () => {
   let service: ConsultationService;

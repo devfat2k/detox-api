@@ -1,11 +1,11 @@
 /// <reference types="jest" />
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConsultationController } from './consultation.controller';
+import { ConsultationController } from './consultation.controller.js';
 import {
   type ConsultationResult,
   ConsultationService,
-} from './consultation.service';
-import { HealthGoal, SubmitConsultationDto } from './consultation.dto';
+} from './consultation.service.js';
+import { HealthGoal, SubmitConsultationDto } from './consultation.dto.js';
 
 describe('ConsultationController', () => {
   let controller: ConsultationController;

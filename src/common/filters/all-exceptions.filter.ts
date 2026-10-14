@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ApiErrorResponse } from '../interfaces/api-response.interface';
+import { ApiErrorResponse } from '../interfaces/api-response.interface.js';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

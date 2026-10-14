@@ -4,10 +4,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
-import { CreateDrinkDto } from './create-drink.dto';
-import { FilterDrinkDto } from './filter-drink.dto';
-import { UpdateDrinkDto } from './update-drink.dto';
+import { SupabaseService } from '../supabase/supabase.service.js';
+import { CreateDrinkDto } from './create-drink.dto.js';
+import { FilterDrinkDto } from './filter-drink.dto.js';
+import { UpdateDrinkDto } from './update-drink.dto.js';
 
 @Injectable()
 export class DrinksService {

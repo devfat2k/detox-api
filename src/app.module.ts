@@ -2,18 +2,18 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { SupabaseModule } from './supabase/supabase.module';
-import { DrinksModule } from './drinks/drinks.module';
-import { ConsultationModule } from './consultation/consultation.module';
-import { MediaModule } from './media/media.module';
-import { CategoriesModule } from './categories/categories.module';
-import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { PlansModule } from './plans/plans.module';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { HealthModule } from './health/health.module';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { SupabaseModule } from './supabase/supabase.module.js';
+import { DrinksModule } from './drinks/drinks.module.js';
+import { ConsultationModule } from './consultation/consultation.module.js';
+import { MediaModule } from './media/media.module.js';
+import { CategoriesModule } from './categories/categories.module.js';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { PlansModule } from './plans/plans.module.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [

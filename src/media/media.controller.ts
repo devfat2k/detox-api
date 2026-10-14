@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import 'multer';
-import { MediaService } from './media.service';
+import { MediaService } from './media.service.js';
 
 @ApiTags('Media')
 @Controller('media')

@@ -4,9 +4,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
-import { CreateCategoryDto } from './create-category.dto';
-import { UpdateCategoryDto } from './update-category.dto';
+import { SupabaseService } from '../supabase/supabase.service.js';
+import { CreateCategoryDto } from './create-category.dto.js';
+import { UpdateCategoryDto } from './update-category.dto.js';
 
 @Injectable()
 export class CategoriesService {

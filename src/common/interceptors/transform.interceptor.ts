@@ -7,8 +7,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BYPASS_TRANSFORM_KEY } from '../decorators/bypass-transform.decorator';
-import { ApiResponse } from '../interfaces/api-response.interface';
+import { BYPASS_TRANSFORM_KEY } from '../decorators/bypass-transform.decorator.js';
+import { ApiResponse } from '../interfaces/api-response.interface.js';
 
 @Injectable()
 export class TransformInterceptor<T>

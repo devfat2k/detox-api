@@ -1,22 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express, { Request, Response } from 'express';
-import { AppModule } from '../src/app.module';
-import { configureApp } from '../src/setup-app';
+import express, { type Request, type Response } from 'express';
+import { AppModule } from '../src/app.module.js';
+import { configureApp } from '../src/setup-app.js';
 
 const server = express();
-let isReady = false;
+let bootstrapPromise: Promise<void> | null = null;
 
-async function bootstrapServerless() {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+async function bootstrapServerless(): Promise<void> {
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
+    logger: ['error', 'warn'],
+  });
   configureApp(app);
   await app.init();
-  isReady = true;
 }
 
 export default async function handler(req: Request, res: Response) {
-  if (!isReady) {
-    await bootstrapServerless();
+  if (!bootstrapPromise) {
+    bootstrapPromise = bootstrapServerless();
   }
+  await bootstrapPromise;
   server(req, res);
 }
