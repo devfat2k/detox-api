@@ -31,12 +31,21 @@ export function configureApp(app: INestApplication): void {
   );
 
   // 5. Cấu hình CORS
-  const allowedOrigins = process.env.FRONTEND_URL
+  const envOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
-    : ['http://localhost:3000'];
+    : [];
+
+  const allowedOrigins: (string | RegExp)[] = [
+    'http://localhost:3000',
+    'https://detox-web.vercel.app',
+    /\.vercel\.app$/,
+    ...envOrigins,
+  ];
+
   app.enableCors({
     origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 
