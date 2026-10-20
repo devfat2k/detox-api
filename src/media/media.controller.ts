@@ -15,7 +15,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import 'multer';
 import { MediaService } from './media.service.js';
 
@@ -25,7 +24,6 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post('upload')
-  @Throttle({ long: { ttl: 60000, limit: 5 } })
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: 'Upload hình ảnh lên Cloudinary',
