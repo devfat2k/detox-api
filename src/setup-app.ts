@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as helmetPkg from 'helmet';
+import express from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 // ponytail: helmet CJS/ESM interop — NodeNext resolves to CJS types where default export
@@ -17,6 +18,11 @@ export function configureApp(app: INestApplication): void {
       contentSecurityPolicy: false, // Tắt CSP để tránh chặn script/style của Swagger UI
     }),
   );
+
+  // 2b. Giới hạn kích thước request body
+  // ponytail: 1MB đủ cho JSON thông thường. Nâng lên nếu cần nhận payload lớn hơn.
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   // 3. Tiền tố toàn cục cho toàn bộ API
   app.setGlobalPrefix('api');

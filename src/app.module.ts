@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { validate } from './config/env.validation.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { SupabaseModule } from './supabase/supabase.module.js';
@@ -16,7 +18,14 @@ import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { name: 'short', ttl: 1000, limit: 3 },
+        { name: 'medium', ttl: 10000, limit: 20 },
+        { name: 'long', ttl: 60000, limit: 60 },
+      ],
+    }),
     SupabaseModule,
     DrinksModule,
     ConsultationModule,
@@ -37,6 +46,10 @@ import { HealthModule } from './health/health.module.js';
       useClass: AllExceptionsFilter,
     },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
