@@ -44,7 +44,7 @@ export function configureApp(app: INestApplication): void {
   const allowedOrigins: (string | RegExp)[] = [
     'http://localhost:3000',
     'https://detox-web.vercel.app',
-    /\.vercel\.app$/,
+    /^https:\/\/detox-web(-[a-z0-9]+)?\.vercel\.app$/,
     ...envOrigins,
   ];
 
